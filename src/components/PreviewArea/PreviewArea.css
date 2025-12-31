@@ -1,0 +1,373 @@
+/* 预览区域主容器 */
+.preview-area {
+    flex: 1;
+    padding: 1.5rem;
+    overflow: auto;
+    background: linear-gradient(180deg, #1a1a1a 0%, #161617 100%);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    gap: 0.5rem;
+}
+
+.preview-area.empty {
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, rgba(30, 30, 30, 0.5) 0%, #1a1a1a 100%);
+}
+
+
+/* 顶部操作区域 */
+.top-actions {
+    display: flex;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    background: rgba(30, 30, 30, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* 通用操作按钮 */
+.action-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #e0e0e0;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+/* 主按钮 (蓝色) */
+.action-btn.primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.action-btn.primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* 次要按钮 (深色/灰色) */
+.action-btn.secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+/* 欢迎页面 */
+.welcome-message {
+    text-align: center;
+    padding: 3rem;
+    color: #888;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(30, 30, 30, 0.4) 0%, transparent 70%);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.welcome-icon {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #0e639c, #4ebfff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0.8;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.welcome-message h3 {
+    color: #ffffff;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.welcome-message p {
+    color: #999;
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+.center-upload-btn {
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, #0e639c, #1177bb);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(14, 99, 156, 0.3);
+}
+
+.center-upload-btn:hover {
+    background: linear-gradient(135deg, #1177bb, #1a8fd4);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(14, 99, 156, 0.4);
+}
+
+.center-upload-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 加载和错误状态 */
+.loading {
+    color: #9cdcfe;
+    font-style: italic;
+    text-align: center;
+    font-weight: 500;
+    padding: 2rem;
+}
+
+.error {
+    color: #f48771;
+    background-color: rgba(244, 135, 113, 0.1);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #f48771;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+/* PSD 全图预览 */
+.psd-full_preview {
+    margin-bottom: 1.2rem;
+    background: linear-gradient(145deg, #1f1f20 0%, #1a1a1b 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.preview-section-header {
+    padding: 0.8rem 1.2rem;
+    background: linear-gradient(180deg, rgba(30, 30, 31, 0.95) 0%, rgba(25, 25, 26, 0.95) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.preview-section-header span {
+    color: #b0b0b0;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+}
+
+.full-preview-container {
+    padding: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image:
+        linear-gradient(45deg, #222223 25%, transparent 25%),
+        linear-gradient(-45deg, #222223 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #222223 75%),
+        linear-gradient(-45deg, transparent 75%, #222223 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    min-height: 300px;
+}
+
+.full-preview-container img {
+    max-width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 24px rgba(0, 0, 0, 0.5));
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+}
+
+.full-preview-container img:hover {
+    transform: scale(1.01);
+}
+
+/* 空筛选结果提示 */
+.empty-filter-message {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    padding: 3rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.empty-filter-message .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-filter-message p {
+    font-size: 1rem;
+    color: #888;
+}
+
+/* 图层预览弹窗 */
+.preview-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.preview-modal {
+    background: #1e1e1e;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    width: 60vw;
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.preview-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    background: rgba(37, 37, 38, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.preview-modal-title {
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.preview-modal-size {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.preview-modal-zoom {
+    color: #4ade80;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    background: rgba(74, 222, 128, 0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.preview-modal-zoom:hover {
+    background: rgba(74, 222, 128, 0.2);
+}
+
+.preview-modal-close {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 1.5rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.preview-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.preview-modal-body {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    background-image:
+        linear-gradient(45deg, #252526 25%, transparent 25%),
+        linear-gradient(-45deg, #252526 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #252526 75%),
+        linear-gradient(-45deg, transparent 75%, #252526 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+.preview-modal-body img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+    border-radius: 4px;
+}
+
+.preview-modal-body .no-preview {
+    color: #666;
+    font-size: 1.2rem;
+    padding: 4rem;
+}

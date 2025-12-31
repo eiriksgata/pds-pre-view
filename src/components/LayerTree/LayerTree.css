@@ -1,0 +1,156 @@
+.layer-tree-viewport {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tree-empty {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.tree-node-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.tree-node-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+}
+
+.tree-node-content:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.tree-node-content.active {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.node-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+}
+
+.expand-icon {
+    font-size: 14px;
+    color: #888;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.expand-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.expand-icon.expanded {
+    transform: rotate(90deg);
+}
+
+.indent-spacer {
+    width: 14px;
+    flex-shrink: 0;
+}
+
+.node-thumbnail {
+    width: 28px;
+    height: 28px;
+    background: #25262b;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.node-thumbnail img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.node-thumbnail .type-icon {
+    font-size: 14px;
+}
+
+.node-name {
+    font-size: 0.85rem;
+    color: #e2e2e2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.node-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+
+.tree-node-content:hover .node-actions {
+    opacity: 1;
+}
+
+.node-size {
+    font-size: 0.75rem;
+    color: #fff;
+    margin-right: 4px;
+}
+
+.node-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.node-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.node-btn.preview:hover {
+    color: #6366f1;
+}
+
+.tree-node-children {
+    display: flex;
+    flex-direction: column;
+    margin-top: 4px;
+}

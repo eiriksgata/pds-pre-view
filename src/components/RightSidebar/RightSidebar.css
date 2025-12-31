@@ -1,0 +1,265 @@
+/* 右侧预览栏容器 */
+.right-sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #1a1a1a 0%, #161617 100%);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* PSD 全图预览区域 */
+.psd-preview-section {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 100px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* 选中图层预览区域 */
+.selected-layer-preview {
+    display: flex;
+    flex-direction: column;
+    min-height: 100px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+/* 区域标题 */
+.section-header {
+    padding: 1rem 1.2rem;
+    background: linear-gradient(180deg, rgba(30, 30, 31, 0.95) 0%, rgba(25, 25, 26, 0.95) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+}
+
+.section-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+/* 缩放选择框 */
+.zoom-select {
+    background: rgba(99, 102, 241, 0.1);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 4px;
+    padding: 0.1rem 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.zoom-select:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.zoom-badge {
+    display: none;
+    /* 既然有了 select,可以隐藏 badge */
+}
+
+.reset-zoom-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #888;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reset-zoom-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.section-header .layer-name {
+    color: #6366f1;
+    font-weight: 500;
+    font-size: 0.8rem;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 预览容器 */
+.preview-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow: hidden;
+    background-image:
+        linear-gradient(45deg, #222223 25%, transparent 25%),
+        linear-gradient(-45deg, #222223 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #222223 75%),
+        linear-gradient(-45deg, transparent 75%, #222223 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    gap: 1rem;
+    position: relative;
+    cursor: grab;
+}
+
+.preview-container:active {
+    cursor: grabbing;
+}
+
+.operation-guide {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 图片包装器，用于组合位移和缩放 */
+.image-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+}
+
+/* 预览图片 */
+.preview-image {
+    max-width: 90vw;
+    /* 允许超出容器但有限制 */
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    /* 防止点击干扰平移 */
+}
+
+/* 空预览提示 */
+.empty-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #666;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.empty-preview p {
+    font-size: 0.9rem;
+    color: #888;
+    margin: 0;
+}
+
+/* 图层信息 */
+.layer-info {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: auto;
+    max-width: 300px;
+    background: rgba(25, 25, 26, 0.9);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item .label {
+    color: #999;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.info-item .value {
+    color: #e8e8e8;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* 可拖动的分隔条 */
+.resize-handle {
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: transparent;
+    cursor: ns-resize;
+    z-index: 100;
+    transition: background-color 0.2s;
+    user-select: none;
+}
+
+.resize-handle:hover,
+.resize-handle:active {
+    background: rgba(99, 102, 241, 0.4);
+}
+
+.resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 1px;
+}
+
+/* 拖动时禁用文本选择 */
+body.resizing {
+    user-select: none;
+    cursor: ns-resize !important;
+}
+
+/* 响应式 - 小屏幕调整比例 */
+@media (max-width: 1200px) {}
