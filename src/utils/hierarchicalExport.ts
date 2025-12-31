@@ -7,9 +7,11 @@
 
 import { open } from '@tauri-apps/plugin-dialog';
 import { mkdir, writeFile, exists } from '@tauri-apps/plugin-fs';
+import { invoke } from '@tauri-apps/api/core';
 import { LayerTreeNode, ExportOptions } from '../types';
 import { sanitizeFileName } from './exportUtils';
-import { base64ToUint8Array, convertImageFormat } from './imageUtils';
+import { base64ToUint8Array, convertImageFormat, getImageData } from './imageUtils';
+import { encodeTga } from './encoders/tga';
 
 /**
  * 按层级结构导出图层树
@@ -82,20 +84,27 @@ export const exportLayerTreeWithStructure = async (
                     const filePath = `${currentPath}\\${fileName}`;
                     try {
                         console.log(`[HierarchicalExport] 导出组全合成图: ${filePath}`);
-                        // 转换格式 (如果需要)
-                        let finalDataUrl = node.layer.imageUrl;
-                        const mimeType = options.format === 'jpg' ? 'image/jpeg' : 'image/png';
-                        if (options.format === 'jpg' || node.layer.imageUrl.startsWith('data:image/png')) {
-                            const converted = await convertImageFormat(node.layer.imageUrl, mimeType, options.quality);
-                            if (converted) finalDataUrl = converted;
-                        }
 
-                        const imageData = base64ToUint8Array(finalDataUrl);
-                        await writeFile(filePath, imageData);
+                        if (options.format === 'blp') {
+                            const blpData = await invoke<number[]>('encode_blp', { imageDataUrl: node.layer.imageUrl });
+                            await writeFile(filePath, new Uint8Array(blpData));
+                        } else if (options.format === 'tga') {
+                            const imgData = await getImageData(node.layer.imageUrl);
+                            const tgaData = encodeTga(imgData);
+                            await writeFile(filePath, tgaData);
+                        } else {
+                            let finalDataUrl = node.layer.imageUrl;
+                            const mimeType = options.format === 'jpg' ? 'image/jpeg' : 'image/png';
+                            if (options.format === 'jpg' || node.layer.imageUrl.startsWith('data:image/png')) {
+                                const converted = await convertImageFormat(node.layer.imageUrl, mimeType, options.quality);
+                                if (converted) finalDataUrl = converted;
+                            }
+                            const imageData = base64ToUint8Array(finalDataUrl);
+                            await writeFile(filePath, imageData);
+                        }
                         success++;
                     } catch (error) {
                         console.error(`[HierarchicalExport] 导出组合成图失败: ${filePath}`, error);
-                        // 不计入失败，因为这是额外特性？或者计入？计入吧。
                         failed++;
                     }
                 }
@@ -111,16 +120,23 @@ export const exportLayerTreeWithStructure = async (
             try {
                 console.log(`[HierarchicalExport] 导出文件: ${filePath}`);
 
-                // 转换格式
-                let finalDataUrl = node.layer.imageUrl;
-                const mimeType = options.format === 'jpg' ? 'image/jpeg' : 'image/png';
-                if (options.format === 'jpg' || node.layer.imageUrl.startsWith('data:image/png')) {
-                    const converted = await convertImageFormat(node.layer.imageUrl, mimeType, options.quality);
-                    if (converted) finalDataUrl = converted;
+                if (options.format === 'blp') {
+                    const blpData = await invoke<number[]>('encode_blp', { imageDataUrl: node.layer.imageUrl });
+                    await writeFile(filePath, new Uint8Array(blpData));
+                } else if (options.format === 'tga') {
+                    const imgData = await getImageData(node.layer.imageUrl);
+                    const tgaData = encodeTga(imgData);
+                    await writeFile(filePath, tgaData);
+                } else {
+                    let finalDataUrl = node.layer.imageUrl;
+                    const mimeType = options.format === 'jpg' ? 'image/jpeg' : 'image/png';
+                    if (options.format === 'jpg' || node.layer.imageUrl.startsWith('data:image/png')) {
+                        const converted = await convertImageFormat(node.layer.imageUrl, mimeType, options.quality);
+                        if (converted) finalDataUrl = converted;
+                    }
+                    const imageData = base64ToUint8Array(finalDataUrl);
+                    await writeFile(filePath, imageData);
                 }
-
-                const imageData = base64ToUint8Array(finalDataUrl);
-                await writeFile(filePath, imageData);
                 success++;
             } catch (error) {
                 console.error(`[HierarchicalExport] 导出文件失败: ${filePath}`, error);

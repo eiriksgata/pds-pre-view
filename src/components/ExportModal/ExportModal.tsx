@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ExportOptions } from '../../types';
 import './ExportModal.css';
 
@@ -10,7 +11,7 @@ interface ExportModalProps {
 }
 
 const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onConfirm, title = '导出配置' }) => {
-    const [format, setFormat] = useState<'png' | 'jpg'>('png');
+    const [format, setFormat] = useState<'png' | 'jpg' | 'blp' | 'tga'>('png');
     const [quality, setQuality] = useState(0.9);
 
     if (!isOpen) return null;
@@ -24,7 +25,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onConfirm, t
         onClose();
     };
 
-    return (
+
+    return createPortal(
         <div className="export-modal-overlay" onClick={onClose}>
             <div className="export-modal" onClick={e => e.stopPropagation()}>
                 <div className="export-modal-header">
@@ -38,10 +40,12 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onConfirm, t
                         <select
                             className="form-select"
                             value={format}
-                            onChange={e => setFormat(e.target.value as 'png' | 'jpg')}
+                            onChange={e => setFormat(e.target.value as 'png' | 'jpg' | 'blp' | 'tga')}
                         >
                             <option value="png">PNG (无损, 支持透明)</option>
                             <option value="jpg">JPG (较小, 有损)</option>
+                            <option value="blp">BLP (魔兽争霸3)</option>
+                            <option value="tga">TGA (Truevision)</option>
                         </select>
                     </div>
 
@@ -70,8 +74,11 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onConfirm, t
                     <button className="btn btn-primary" onClick={handleConfirm}>确认导出</button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
+
+
 };
 
 export default ExportModal;

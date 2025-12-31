@@ -135,7 +135,7 @@ export interface ExportOptions {
     /** 是否保留目录结构 */
     preserveStructure: boolean;
     /** 导出格式 */
-    format: 'png' | 'jpg';
+    format: 'png' | 'jpg' | 'blp' | 'tga';
     /** 图片质量(0-1),仅对jpg格式有效 */
     quality?: number;
 }

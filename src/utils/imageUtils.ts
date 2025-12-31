@@ -255,3 +255,29 @@ export const convertImageFormat = async (
         return null;
     }
 };
+
+/**
+ * 获取图片数据的 ImageData 对象
+ * 
+ * @param url - 图片 URL
+ * @returns Promise, 返回 ImageData 对象
+ */
+export const getImageData = (url: string): Promise<ImageData> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                reject(new Error('无法创建 Canvas Context'));
+                return;
+            }
+            ctx.drawImage(img, 0, 0);
+            resolve(ctx.getImageData(0, 0, img.width, img.height));
+        };
+        img.onerror = reject;
+        img.src = url;
+    });
+};

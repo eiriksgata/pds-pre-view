@@ -7,8 +7,10 @@
 
 import { save, open } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
+import { invoke } from '@tauri-apps/api/core';
 import { ExportOptions } from '../types';
-import { convertImageFormat, base64ToUint8Array } from './imageUtils';
+import { convertImageFormat, base64ToUint8Array, getImageData } from './imageUtils';
+import { encodeTga } from './encoders/tga';
 
 /**
  * 清理文件名，移除非法字符
@@ -78,27 +80,41 @@ export const exportLayersToFolder = async (
 
     let success = 0;
     let failed = 0;
-    const ext = options.format === 'jpg' ? 'jpg' : 'png';
+
     const mimeType = options.format === 'jpg' ? 'image/jpeg' : 'image/png';
 
     for (const layer of layers) {
         try {
             const safeName = sanitizeFileName(layer.name);
-            const filePath = `${folderPath}\\${safeName}.${ext}`;
+            const targetExt = options.format === 'jpg' ? 'jpg' : options.format;
+            const filePath = `${folderPath}\\${safeName}.${targetExt}`;
 
             // 转换格式
-            let finalDataUrl = layer.imageUrl;
-            if (options.format === 'jpg' || layer.imageUrl.startsWith('data:image/png')) {
-                // 总是调用转换以确保格式正确 (特别是 PNG->JPG 需要背景色)
-                // 或者如果源不是目标格式
-                const converted = await convertImageFormat(layer.imageUrl, mimeType, options.quality);
-                if (converted) {
-                    finalDataUrl = converted;
-                }
-            }
+            if (options.format === 'blp') {
+                // 使用 Tauri 命令编码 BLP
+                const blpData = await invoke<number[]>('encode_blp', {
+                    imageDataUrl: layer.imageUrl
+                });
+                await writeFile(filePath, new Uint8Array(blpData));
 
-            const imageData = base64ToUint8Array(finalDataUrl);
-            await writeFile(filePath, imageData);
+            } else if (options.format === 'tga') {
+                // TGA (无压缩 32位)
+                const imgData = await getImageData(layer.imageUrl);
+                const tgaData = encodeTga(imgData);
+                await writeFile(filePath, tgaData);
+
+            } else {
+                // PNG / JPG
+                let finalDataUrl = layer.imageUrl;
+                if (options.format === 'jpg' || layer.imageUrl.startsWith('data:image/png')) {
+                    const converted = await convertImageFormat(layer.imageUrl, mimeType, options.quality);
+                    if (converted) {
+                        finalDataUrl = converted;
+                    }
+                }
+                const imageData = base64ToUint8Array(finalDataUrl);
+                await writeFile(filePath, imageData);
+            }
             success++;
         } catch (error) {
             console.error(`导出 ${layer.name} 失败:`, error);
