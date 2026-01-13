@@ -34,6 +34,7 @@ jobs:
 
       - name: 从 Git Tag 提取版本号
         id: get_version
+        shell: bash
         run: |
           # 获取 tag 名称（例如 v1.0.1）
           TAG_NAME=${GITHUB_REF#refs/tags/}
