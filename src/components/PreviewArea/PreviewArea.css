@@ -9,12 +9,34 @@
     height: 100%;
     min-height: 0;
     gap: 0.5rem;
+    position: relative;
+    /* 确保可以接收拖拽事件 */
+    pointer-events: auto;
 }
 
 .preview-area.empty {
     justify-content: center;
     align-items: center;
     background: radial-gradient(circle at center, rgba(30, 30, 30, 0.5) 0%, #1a1a1a 100%);
+}
+
+/* 隐藏图层提示 */
+.hidden-layers-tip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #fbbf24;
+    margin-bottom: 0.5rem;
+}
+
+.hidden-layers-tip .tip-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
 }
 
 
@@ -370,4 +392,90 @@
     color: #666;
     font-size: 1.2rem;
     padding: 4rem;
+}
+
+/* 拖拽相关样式 */
+.preview-area.dragging {
+    position: relative;
+}
+
+.preview-area.dragging::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(59, 130, 246, 0.1);
+    border: 2px dashed rgba(59, 130, 246, 0.5);
+    border-radius: 8px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.drag-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.drag-message {
+    text-align: center;
+    padding: 3rem;
+    background: rgba(30, 30, 30, 0.95);
+    border-radius: 16px;
+    border: 2px dashed rgba(59, 130, 246, 0.6);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.drag-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+.drag-message h3 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.drag-message p {
+    color: #9cdcfe;
+    font-size: 1rem;
+    margin: 0;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        border-color: rgba(59, 130, 246, 0.6);
+    }
+    50% {
+        transform: scale(1.02);
+        border-color: rgba(59, 130, 246, 0.9);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }

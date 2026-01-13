@@ -41,10 +41,40 @@
     border-color: rgba(99, 102, 241, 0.3);
 }
 
+.tree-node-content.is-hidden {
+    opacity: 0.5;
+    position: relative;
+}
+
+.tree-node-content.is-hidden::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(248, 113, 113, 0.6) 10%, 
+        rgba(248, 113, 113, 0.6) 90%, 
+        transparent 100%);
+    pointer-events: none;
+}
+
+.tree-node-content.is-hidden .node-thumbnail {
+    opacity: 0.6;
+    filter: grayscale(0.3);
+}
+
+.tree-node-content.is-hidden .node-name {
+    color: #999;
+    text-decoration: line-through;
+}
+
 .node-left {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     min-width: 0;
     flex: 1;
 }
@@ -118,6 +148,50 @@
 
 .tree-node-content:hover .node-actions {
     opacity: 1;
+}
+
+.visibility-toggle {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.visibility-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #60a5fa;
+}
+
+.visibility-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
+.visibility-toggle.hidden {
+    color: #f87171;
+    opacity: 0.6;
+}
+
+.visibility-toggle.hidden:hover {
+    opacity: 1;
+    color: #ef4444;
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.node-info-tags {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .node-size {

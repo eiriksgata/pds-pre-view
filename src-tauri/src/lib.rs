@@ -58,6 +58,11 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![greet, encode_blp])
+        .setup(|_app| {
+            // 由于 dragDropEnabled 设置为 false，文件拖放由前端 HTML5 事件处理
+            // 不需要在 Rust 端处理
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 /**
  * 文件验证配置接口
@@ -26,6 +26,15 @@ export interface UseFileUploadReturn {
     ) => void;
     /** 验证文件是否有效 */
     validateFile: (file: File) => { valid: boolean; error?: string };
+    /** 是否正在拖拽 */
+    isDragging: boolean;
+    /** 拖拽事件处理器 */
+    dragHandlers: {
+        onDragEnter: (e: React.DragEvent) => void;
+        onDragOver: (e: React.DragEvent) => void;
+        onDragLeave: (e: React.DragEvent) => void;
+        onDrop: (e: React.DragEvent, onSuccess: (file: File) => void, onError: (message: string) => void) => void;
+    };
 }
 
 /**
@@ -56,6 +65,8 @@ export interface UseFileUploadReturn {
  */
 export const useFileUpload = (config: FileValidationConfig): UseFileUploadReturn => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragCounterRef = useRef(0); // 用于处理拖拽进入/离开事件（避免子元素触发）
 
     /**
      * 触发文件选择对话框
@@ -120,10 +131,160 @@ export const useFileUpload = (config: FileValidationConfig): UseFileUploadReturn
         event.target.value = '';
     };
 
+    /**
+     * 处理拖拽进入事件
+     */
+    const handleDragEnter = useCallback((e: React.DragEvent) => {
+        console.log('[Drag] onDragEnter 触发', {
+            items: e.dataTransfer?.items?.length,
+            files: e.dataTransfer?.files?.length,
+            types: Array.from(e.dataTransfer?.types || [])
+        });
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current++;
+        console.log('[Drag] dragCounterRef.current:', dragCounterRef.current);
+        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+            console.log('[Drag] 设置 isDragging = true');
+            setIsDragging(true);
+        } else {
+            console.log('[Drag] 没有检测到文件项，跳过设置 isDragging');
+        }
+    }, []);
+
+    /**
+     * 处理拖拽悬停事件
+     */
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = 'copy';
+        }
+    }, []);
+
+    /**
+     * 处理拖拽离开事件
+     */
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        console.log('[Drag] onDragLeave 触发', {
+            currentTarget: e.currentTarget,
+            relatedTarget: e.relatedTarget,
+            dragCounterBefore: dragCounterRef.current
+        });
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current--;
+        console.log('[Drag] dragCounterRef.current 减为:', dragCounterRef.current);
+        if (dragCounterRef.current === 0) {
+            console.log('[Drag] 设置 isDragging = false');
+            setIsDragging(false);
+        }
+    }, []);
+
+    /**
+     * 处理拖拽放下事件
+     */
+    const handleDrop = useCallback((
+        e: React.DragEvent,
+        onSuccess: (file: File) => void,
+        onError: (message: string) => void
+    ) => {
+        console.log('[Drag] onDrop 触发', {
+            files: e.dataTransfer?.files?.length,
+            items: e.dataTransfer?.items?.length,
+            types: Array.from(e.dataTransfer?.types || []),
+            hasOnSuccess: !!onSuccess,
+            hasOnError: !!onError
+        });
+        
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        dragCounterRef.current = 0;
+
+        const files = e.dataTransfer.files;
+        console.log('[Drag] 文件列表:', {
+            length: files?.length,
+            files: files ? Array.from(files).map(f => ({ name: f.name, size: f.size, type: f.type })) : []
+        });
+
+        if (!files || files.length === 0) {
+            console.warn('[Drag] 没有检测到文件，退出');
+            return;
+        }
+
+        // 只处理第一个文件
+        const file = files[0];
+        console.log('[Drag] 处理文件:', {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            lastModified: new Date(file.lastModified).toISOString()
+        });
+
+        // 内联验证逻辑，避免依赖问题
+        console.log('[Drag] 配置信息:', {
+            acceptedExtensions: config.acceptedExtensions,
+            maxSize: config.maxSize
+        });
+
+        const isValidExtension = config.acceptedExtensions.some(ext =>
+            file.name.toLowerCase().endsWith(ext)
+        );
+
+        console.log('[Drag] 文件扩展名验证:', {
+            fileName: file.name,
+            isValidExtension,
+            checkedExtensions: config.acceptedExtensions
+        });
+
+        if (!isValidExtension) {
+            const errorMsg = `请选择有效的文件类型: ${config.acceptedExtensions.join(', ')}`;
+            console.error('[Drag] 文件类型验证失败:', errorMsg);
+            if (onError) {
+                onError(errorMsg);
+            } else {
+                console.error('[Drag] onError 回调不存在！');
+            }
+            return;
+        }
+
+        if (config.maxSize && file.size > config.maxSize) {
+            const maxSizeMB = (config.maxSize / (1024 * 1024)).toFixed(2);
+            const errorMsg = `文件大小不能超过 ${maxSizeMB} MB`;
+            console.error('[Drag] 文件大小验证失败:', errorMsg, {
+                fileSize: file.size,
+                maxSize: config.maxSize
+            });
+            if (onError) {
+                onError(errorMsg);
+            } else {
+                console.error('[Drag] onError 回调不存在！');
+            }
+            return;
+        }
+
+        console.log('[Drag] 文件验证通过，调用 onSuccess');
+        if (onSuccess) {
+            console.log('[Drag] 调用 onSuccess 回调');
+            onSuccess(file);
+        } else {
+            console.error('[Drag] onSuccess 回调不存在！');
+        }
+    }, [config]);
+
     return {
         fileInputRef,
         triggerFileSelect,
         handleFileChange,
         validateFile,
+        isDragging,
+        dragHandlers: {
+            onDragEnter: handleDragEnter,
+            onDragOver: handleDragOver,
+            onDragLeave: handleDragLeave,
+            onDrop: handleDrop,
+        },
     };
 };

@@ -30,10 +30,11 @@ const PSDViewer = () => {
   // const { toggleSelectAll } = useLayerSelection();
   // 使用 PSD 解析 Hook
   const { layers, layerTree, loading, error, psdPreviewUrl, parsePsdFile, psdInfo } = usePsdParser();
-  const { fileInputRef, handleFileChange } = useFileUpload({
+  const { fileInputRef, handleFileChange, isDragging, dragHandlers } = useFileUpload({
     acceptedExtensions: [...APP_CONFIG.FILE.ACCEPTED_EXTENSIONS],
     maxSize: APP_CONFIG.FILE.MAX_SIZE,
   });
+
 
   // 本地状态
   const [hasFile, setHasFile] = useState(false);
@@ -41,6 +42,8 @@ const PSDViewer = () => {
   const [selectedLayer, setSelectedLayer] = useState<Layer | null>(null);
   const [leftWidth, setLeftWidth] = useState(30); // 左侧宽度百分比
   const isResizingRef = useRef(false);
+  // 隐藏的图层索引集合（用于选择性导出）
+  const [hiddenLayers, setHiddenLayers] = useState<Set<number>>(new Set());
 
   // 导出模态框状态
   const [showExportModal, setShowExportModal] = useState(false);
@@ -55,21 +58,89 @@ const PSDViewer = () => {
     return () => document.removeEventListener('contextmenu', handleContextMenu);
   }, []);
 
+  // 全局拖拽事件处理 - 只在 document/body 级别阻止默认行为，让组件处理
+  useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      // 只在 document/body 级别阻止，让组件自己处理
+      if (e.target === document.body || e.target === document.documentElement) {
+        console.log('[App] 全局 onDragOver 触发（document/body 级别）');
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer) {
+          e.dataTransfer.dropEffect = 'copy';
+        }
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      // 只在 document/body 级别阻止，让组件自己处理
+      if (e.target === document.body || e.target === document.documentElement) {
+        console.log('[App] 全局 onDrop 触发（document/body 级别）', {
+          target: e.target,
+          files: e.dataTransfer?.files?.length
+        });
+        e.preventDefault();
+        e.stopPropagation();
+      } else {
+        console.log('[App] 全局 onDrop 触发（子元素级别，不阻止）', {
+          target: e.target,
+          currentTarget: e.currentTarget
+        });
+      }
+    };
+
+    document.addEventListener('dragover', handleDragOver, true);
+    document.addEventListener('drop', handleDrop, true);
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver, true);
+      document.removeEventListener('drop', handleDrop, true);
+    };
+  }, []);
+
+
   /**
    * 处理文件选择成功
    * @param file - 选中的文件
    */
   const handleFileSelect = async (file: File) => {
+    console.log('[App] handleFileSelect 被调用', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      lastModified: new Date(file.lastModified).toISOString()
+    });
+    
     setHasFile(true);
     setSelectedIndexes(new Set());
     setSelectedLayer(null);
+    setHiddenLayers(new Set());
 
     try {
+      console.log('[App] 开始解析 PSD 文件...');
       await parsePsdFile(file);
+      console.log('[App] PSD 文件解析完成');
     } catch (err) {
+      console.error('[App] PSD 文件解析失败:', err);
       setHasFile(false);
       showAlert(APP_CONFIG.TEXT.PROCESS_ERROR, 'error');
     }
+  };
+
+  /**
+   * 切换图层可见性（用于选择性导出）
+   * @param index - 图层索引
+   */
+  const handleToggleLayerVisibility = (index: number) => {
+    setHiddenLayers(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
   };
 
   /**
@@ -104,6 +175,7 @@ const PSDViewer = () => {
    * @param errorMsg - 错误信息
    */
   const handleError = (errorMsg: string) => {
+    console.error('[App] handleError 被调用:', errorMsg);
     showAlert(errorMsg, 'error');
   };
 
@@ -154,17 +226,32 @@ const PSDViewer = () => {
    */
   const handleConfirmExport = async (options: ExportOptions) => {
     if (exportTarget === 'selected') {
-      // 批量导出选中
+      // 批量导出选中（排除隐藏的图层）
+      console.log('[导出] 选中的图层索引:', Array.from(selectedIndexes));
+      console.log('[导出] 隐藏的图层索引:', Array.from(hiddenLayers));
+      
       const selectedLayers = Array.from(selectedIndexes)
-        .map(i => layers[i])
+        .filter(i => {
+          const isHidden = hiddenLayers.has(i);
+          if (isHidden) {
+            console.log(`[导出] 跳过隐藏图层 [${i}]: ${layers[i]?.name}`);
+          }
+          return !isHidden;
+        })
+        .map(i => {
+          console.log(`[导出] 准备导出 [${i}]: ${layers[i]?.name}`);
+          return layers[i];
+        })
         .filter(l => l.imageUrl)
         .map(l => ({
           imageUrl: l.imageUrl!,
           name: l.name
         }));
 
+      console.log('[导出] 最终导出图层数:', selectedLayers.length);
+
       if (selectedLayers.length === 0) {
-        showAlert('选中图层中没有可导出的图片数据', 'warning');
+        showAlert('选中图层中没有可导出的图片数据（或全部被隐藏）', 'warning');
         return;
       }
 
@@ -181,10 +268,10 @@ const PSDViewer = () => {
       }
 
     } else {
-      // 按结构导出
+      // 按结构导出（排除隐藏的图层）
       try {
         console.log('[App] 开始按结构导出...', options);
-        const result = await exportLayerTreeWithStructure(layerTree, options);
+        const result = await exportLayerTreeWithStructure(layerTree, options, hiddenLayers);
         if (result.success === 0 && result.failed === 0) {
           // 用户取消了选择目录
           return;
@@ -253,7 +340,9 @@ const PSDViewer = () => {
             error={error}
             hasFile={hasFile}
             selectedIndexes={selectedIndexes}
+            hiddenLayers={hiddenLayers}
             onToggleSelection={handleLayerSelect}
+            onToggleVisibility={handleToggleLayerVisibility}
             onExportLayer={handleExportLayer}
             onExportSelected={handleExportSelected}
             onExportWithStructure={handleExportWithStructure}
@@ -262,6 +351,10 @@ const PSDViewer = () => {
             fileInputRef={fileInputRef}
             psdPreviewUrl={psdPreviewUrl}
             psdInfo={psdInfo}
+            isDragging={isDragging}
+            dragHandlers={dragHandlers}
+            onFileSelectSuccess={handleFileSelect}
+            onFileSelectError={handleError}
           />
         </div>
 

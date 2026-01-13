@@ -20,6 +20,7 @@ import { encodeTga } from './encoders/tga';
  * 
  * @param tree - 图层树(从buildLayerTree获取)
  * @param options - 导出选项
+ * @param hiddenLayers - 隐藏的图层索引集合，这些图层不会被导出
  * @returns Promise,resolve时返回导出统计信息
  * 
  * @example
@@ -34,7 +35,8 @@ import { encodeTga } from './encoders/tga';
  */
 export const exportLayerTreeWithStructure = async (
     tree: LayerTreeNode[],
-    options: ExportOptions = { preserveStructure: true, format: 'png' }
+    options: ExportOptions = { preserveStructure: true, format: 'png' },
+    hiddenLayers: Set<number> = new Set()
 ): Promise<{ success: number; failed: number }> => {
     // 让用户选择根目录
     const rootPath = await open({
@@ -59,6 +61,12 @@ export const exportLayerTreeWithStructure = async (
      * @param currentPath - 当前文件系统路径
      */
     const exportNode = async (node: LayerTreeNode, currentPath: string): Promise<void> => {
+        // 检查该节点是否被隐藏
+        if (node.index !== undefined && hiddenLayers.has(node.index)) {
+            console.log(`[HierarchicalExport] 跳过隐藏图层: ${node.name}`);
+            return;
+        }
+
         const safeName = sanitizeFileName(node.name);
 
         if (node.isGroup && node.children) {
