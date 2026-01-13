@@ -52,6 +52,33 @@ npm run tauri:dev
 npm run tauri:build
 ```
 
+## 自动构建与发布
+
+项目配置了 GitHub Actions 工作流，支持自动构建和发布。
+
+### 构建测试
+
+每次推送到主分支或创建 Pull Request 时，会自动触发构建测试，确保代码可以正常编译。
+
+### 发布到 GitHub Releases
+
+要发布新版本到 GitHub Releases：
+
+1. **更新版本号**：在 `package.json` 和 `src-tauri/Cargo.toml` 中更新版本号
+2. **创建 Git Tag**：
+   ```bash
+   git tag v1.0.0  # 使用语义化版本号，例如 v1.0.0
+   git push origin v1.0.0
+   ```
+3. **自动构建**：GitHub Actions 会自动：
+   - 在 Windows、macOS (Intel + ARM) 和 Linux 上构建应用
+   - 创建 GitHub Release
+   - 上传构建产物（.exe, .msi, .dmg, .AppImage, .deb 等）
+
+工作流文件位于 `.github/workflows/` 目录：
+- `build.yml` - 构建测试工作流
+- `release.yml` - 发布工作流
+
 ## 目录结构
 
 ```
