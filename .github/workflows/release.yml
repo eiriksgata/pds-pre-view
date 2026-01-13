@@ -32,6 +32,17 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: 从 Git Tag 提取版本号
+        id: get_version
+        run: |
+          # 获取 tag 名称（例如 v1.0.1）
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          # 提取版本号（去掉 v 前缀，例如 1.0.1）
+          VERSION=${TAG_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Tag: $TAG_NAME, Version: $VERSION"
+
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
@@ -57,8 +68,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__ # 自动替换 __VERSION__ 为应用版本
-          releaseName: 'PSD 预览工具 v__VERSION__'
+          tagName: ${{ steps.get_version.outputs.tag_name }} # 使用 Git tag 名称
+          releaseName: 'PSD 预览工具 ${{ steps.get_version.outputs.tag_name }}' # 使用 tag 名称作为 Release 标题
           releaseBody: |
             ## 更新内容
             
